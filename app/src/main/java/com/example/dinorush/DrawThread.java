@@ -339,9 +339,7 @@ public class DrawThread extends Thread  {
                             canvas.drawBitmap(restart_bitmap, restart_x, restart_y, paint);
                             canvas.drawBitmap(menu_bitmap, btn_home_x, restart_y, paint);
                             paint.setTextSize(80);
-
                             Pterod.draw(canvas);
-
                         }
 
                         if (elapsedTime > 18) {
