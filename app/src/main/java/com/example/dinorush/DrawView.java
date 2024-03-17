@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -26,7 +27,7 @@ import java.util.Random;
 public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
     private static int viewWidth, viewHeight;
 
-    private double points;
+    private MediaPlayer jumpPlayer;
     DrawThread drawThread;
     private int speed = 70,restart_width,restart_height,restart_x,restart_y,btn_home_x;
 
@@ -41,7 +42,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
     public DrawView(Context context) {
         super(context);
-
+        jumpPlayer= MediaPlayer.create(context, R.raw.jump);
         getHolder().addCallback(this);
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -120,6 +121,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             if (eventAction == MotionEvent.ACTION_DOWN && !drawThread.Dino.IsDown() && !drawThread.Dino.IsUp() && event.getX() >= viewWidth / 2) {
                 //прыжок
                 drawThread.Dino.SetUp(true);
+                jumpPlayer.start();
             }if (eventAction == MotionEvent.ACTION_DOWN && !drawThread.Dino.IsDown() && !drawThread.Dino.IsUp() && event.getX() < viewWidth / 2) {
                 //пригиб
                 drawThread.Dino.setBent(true);

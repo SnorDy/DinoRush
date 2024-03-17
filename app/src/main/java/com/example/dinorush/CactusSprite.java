@@ -28,7 +28,6 @@ public class CactusSprite extends Sprite {
     }
 
     public int getFrameWidth(){return bitmap.getWidth();}
-
     public void update() {
 
         x -= Vx;

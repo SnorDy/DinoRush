@@ -8,7 +8,7 @@ import android.util.Log;
 public class CloudSprite {
     private Bitmap bitmap;
     private int x,y,viewWidth;
-    private boolean isActive;
+    private boolean isActive=true;
     private  int frameWidth,frameHeight,Vx;
 
     private Paint paint =new Paint();

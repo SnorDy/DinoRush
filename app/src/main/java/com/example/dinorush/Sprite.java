@@ -16,6 +16,7 @@ public class Sprite {
     public boolean isActive() {
         return isActive;
     }
+    public void setActive(boolean f){this.isActive=f;}
     public int getFrameWidth(){return bitmap.getWidth();}
     public void update() {
 
@@ -23,6 +24,9 @@ public class Sprite {
         if (x< -200){this.isActive=false;
             Log.d("UPDATE","Its update");}
 
+    }
+    public int getVx() {
+        return Vx;
     }
     public Rect getBoundingBoxRect(){
         return new Rect(this.x,this.y,this.x+bitmap.getWidth(),this.y+bitmap.getHeight());

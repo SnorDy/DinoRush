@@ -36,14 +36,7 @@ public class DinoSprite {
         this.jump_speed=45;
 
         this.y= y;
-//        y=y-20;
-//
-//        this.y=y-(y%jump_speed);
-
         this.start_y=this.y;
-
-//        this.jump_y=y/3-(y/3%jump_speed)-jump_speed;
-
         this.jump_y=this.y%jump_speed+frameHeight-(frameHeight%jump_speed);
         this.frames = new ArrayList<Rect>();
         this.frames.add(initialFrame);
@@ -53,7 +46,7 @@ public class DinoSprite {
         this.currentFrame = 0;
         this.frameWidth = initialFrame.width();
         this.frameHeight = initialFrame.height();
-        Log.d("YST",""+start_y+" "+jump_y);
+
 
     }
     public void updateFrameTime(){this.frameTime-=2; if (this.frameTime<20)this.frameTime=20;}//метод для ускорения анимации в соответствии со скоростью
@@ -87,18 +80,17 @@ public class DinoSprite {
         frames.add(frame);
     }
     public void addBentFrame(Rect frame){bent_frames.add(frame);}
-
+    public int getY(){return y;}
 
     public void update(int ms){
         timeForCurrentFrame += ms;
 
         //реализация прыжка
         if ((IsUp())&&(this.y!=jump_y))this.y-=jump_speed;
-        else {SetDown(true);SetUp(false);
-        Log.d("YA EBALA","JUMP STOP");}
+        else {SetDown(true);SetUp(false);}
 
         if ((this.y!=this.start_y)&&(IsDown())){this.y+=jump_speed;}
-        else {SetDown(false);Log.d("JUMP"," y "+y+"start y"+ start_y+" "+Integer.toString(262-262%40));}
+        else {SetDown(false);}
 
 
         if (timeForCurrentFrame >= frameTime&&isAlive()&&!(isBent())) {
@@ -108,7 +100,6 @@ public class DinoSprite {
         else if (timeForCurrentFrame >= frameTime&&isAlive()&&isBent()) {
             currentFrame = (currentFrame + 1) % (bent_frames.size());
             timeForCurrentFrame = timeForCurrentFrame - frameTime-10;
-            Log.d("BENT","BENT");
         }
 
 
@@ -119,8 +110,7 @@ public class DinoSprite {
             currentFrame=frames.size()-1;
             setBent(false);
 
-
-            Log.d("DINNO",  "X dino"+x+" y dino" +y+ "s X "+s.getX()+" S y"+ s.getY()); return true;}
+            return true;}
 
         return false;
     }
@@ -132,18 +122,24 @@ public class DinoSprite {
         return false;
     }
     public boolean intersect(PterodactylSprite s){//проврека на столкновения с птеродактелем
+        if (y!=start_y) {
+            if (getBoundingBoxRect(1).intersect(s.getBoundingBoxRect(true))) {
+                currentFrame = frames.size() - 1;
+                setBent(false);
+                return true;
+            }} else {
+                if (getBoundingBoxRect(1).intersect(s.getBoundingBoxRect())) {
+                    currentFrame = frames.size() - 1;
+                    setBent(false);
+                    return true;
+                }
+            }
 
-        if (getBoundingBoxRect(1).intersect(s.getBoundingBoxRect())) {
-            currentFrame=frames.size()-1;
-            setBent(false);
-            return true;
+            return false;
         }
-
-        return false;
-    }
     public Rect getBoundingBoxRect(int x){
         if (!(isBent())){
-        return new Rect(this.x,this.y,this.x+frameWidth-7,this.y+frameHeight);}
+        return new Rect(this.x,this.y,this.x+frameWidth-4,this.y+frameHeight);}
         else{ int y1= this.y+(bent_frames.get(0).height()/2);
             return  new Rect((int)x, (int) y1, (int)(x + bent_frames.get(0).width()), (int)y1+bent_frames.get(0).height());}
     }
@@ -157,12 +153,12 @@ public class DinoSprite {
             int y1= this.y+(bent_frames.get(0).height()/2);
             Rect destination = new Rect((int)x, (int) y1, (int)(x + bent_frames.get(0).width()), (int)y1+bent_frames.get(0).height());
             canvas.drawBitmap(bent_bitmap, bent_frames.get(currentFrame%2), destination,  p);
-            Log.d("BENT","IS BENT");
+
         }
         else{
 
         Rect destination = new Rect((int)x, (int)this.y, (int)(x + frameWidth), (this.y +frameHeight));
         canvas.drawBitmap(bitmap, frames.get(currentFrame), destination,  p);
-        Log.d("DINO","IS DRAW");}
+       }
     }
 }

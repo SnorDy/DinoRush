@@ -11,6 +11,7 @@ import android.graphics.Paint;
 
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -30,6 +31,7 @@ public class DrawThread extends Thread  {
     public PterodactylSprite Pterod;
     public double points;
     private int coins;
+    private int coin_width,background_width,dino_height;
     private boolean pterod_is_ready = false;
     private int bestScore;
     private  final CoinsSprite Coin;
@@ -49,6 +51,7 @@ public class DrawThread extends Thread  {
     private  int viewWidth,viewHeight;
     private Paint paint= new Paint();
     private long prevTime;
+    private MediaPlayer deathPlayer,coinPlayer;
     private int background_color;
     private volatile boolean running = true; //флаг для остановки потока
 
@@ -58,6 +61,10 @@ public class DrawThread extends Thread  {
         DBconnector = new DataHelper(context);
         bestScore = DBconnector.select();
         coins = DBconnector.selectCoins();
+
+        deathPlayer= MediaPlayer.create(context, R.raw.death);
+        coinPlayer= MediaPlayer.create(context, R.raw.coin);
+
         Typeface tf = ResourcesCompat.getFont(context, R.font.pixel_font);
         paint.setTextSize(120);
         paint.setTypeface(tf);
@@ -80,7 +87,7 @@ public class DrawThread extends Thread  {
         coin_bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.coin), viewWidth / 30, viewWidth / 30, false);
         cloud_bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.cloud), viewWidth / 7, viewWidth / 13, false);
+                R.drawable.cloud), viewWidth / 10, viewHeight / 19, false);
 
         if (this.mode == "cactus") {
         cactuses = new Bitmap[]{BitmapFactory.decodeResource(context.getResources(),
@@ -88,8 +95,7 @@ public class DrawThread extends Thread  {
                 R.drawable.cactus_2), BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.cactus_4),BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.cactus_5),BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.cactus_6),BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.cactus_7)};
+                R.drawable.cactus_3)};
 
         for (int i=0;i< cactuses.length;i++){this.tree_bitmap_arr.add(Bitmap.createScaledBitmap(cactuses[i],
                 viewWidth / 14*cactuses[i].getWidth()/100,
@@ -103,9 +109,9 @@ public class DrawThread extends Thread  {
         int pterod_w= pterod_bitmap.getWidth()/2;
 
         Rect firstFrame = new Rect(0, 0, dino_w, dino_bitmap.getHeight());//первый кадр с началом в 0 0
-        Rect firsPterodFrame = new Rect(0,0,pterod_w,pterod_bitmap.getHeight());
+        Rect firstPterodFrame = new Rect(0,0,pterod_w,pterod_bitmap.getHeight());
 
-        Pterod = new PterodactylSprite(pterod_bitmap,pterod_w+viewWidth,viewHeight/7,firsPterodFrame,viewWidth);
+        Pterod = new PterodactylSprite(pterod_bitmap,pterod_w+viewWidth,viewHeight/7,firstPterodFrame,viewWidth);
         Dino = new DinoSprite(dino_bitmap, bent_dino_bitmap,40, 4*viewHeight/7, firstFrame);
         Coin = new CoinsSprite(coin_bitmap,0,viewHeight - viewHeight / 4-viewHeight / 98-50,(int) this.speed,viewWidth);
         //добавление прямоугольников в массив
@@ -118,8 +124,9 @@ public class DrawThread extends Thread  {
         for (int i = 0;i<2;i++){Pterod.addFrame(new Rect(i * pterod_w, 0,
                 i * pterod_w + pterod_w, pterod_bitmap.getHeight()));}
         Random random = new Random();
-        for (int i=0;i<4;i++){clouds_arr[i]=new CloudSprite(cloud_bitmap,viewWidth+10,
-                random.nextInt(3*viewHeight/7)+cloud_bitmap.getHeight(),(int) this.speed);}
+        int k=viewWidth/3;
+        for (int i=0;i<4;i++){clouds_arr[i]=new CloudSprite(cloud_bitmap,k*i,
+                random.nextInt(1*viewHeight/7)+cloud_bitmap.getHeight()*2,5);}
 
         //вычисление размеров и положения кнопки рестарт
         restart_width=viewWidth/11;
@@ -127,6 +134,11 @@ public class DrawThread extends Thread  {
         restart_x=viewWidth/2-restart_width-20;
         btn_home_x=restart_x+20+restart_width;
         restart_y=viewHeight/2-restart_height/4;
+
+        this.coin_width= coin_bitmap.getWidth();
+        this.background_width=background_bitmap.getWidth();
+        this.dino_height=dino_bitmap.getHeight();
+
         //проверка на ночной режим и изменение цвета текста и изображенмия кнопки рестарт в соотвветствии с темой
         int currentNightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         switch (currentNightMode) {
@@ -161,8 +173,10 @@ public class DrawThread extends Thread  {
 
     protected void update() {
         this.speed+=0.005;
+
         if ((points%50==0) && points!=0) {
             this.speed += 2;
+            this.jump_length+=50;
             Dino.updateFrameTime();
         }
         //проверка столкновений с елками
@@ -170,8 +184,10 @@ public class DrawThread extends Thread  {
             tree.Vx=(int)speed;
             Dino.intersect(tree);
         }
+        Coin.setVx((int) this.speed);
         //если врезался, обнуляем скорость движения
         if (!Dino.isAlive()) {
+            deathPlayer.start();
             Coin.setActive(false);
             Pterod.setActive(false);
             pterod_is_ready=false;
@@ -195,13 +211,16 @@ public class DrawThread extends Thread  {
                     GenerateTrees();
             }
 
-            if (Dino.intersect(Coin)&&Coin.isActive()){Coin.setActive(false);coins+=1;}
+            if (Dino.intersect(Coin)&&Coin.isActive()){Coin.setActive(false);coins+=1;coinPlayer.start();}
             if (Dino.intersect(Pterod)&&Pterod.isActive()){Dino.setAlive(false);Pterod.setActive(false);}
 
-            background_x = (background_x + (int) this.speed) % (background_bitmap.getWidth());
+            background_x = (background_x + (int) this.speed) % (background_width);
 
             for (Sprite tree : trees) {
                 tree.update();
+            }
+            for (CloudSprite cloud :clouds_arr) {
+                cloud.update();
             }
 
             points+=0.05;
@@ -250,37 +269,51 @@ public class DrawThread extends Thread  {
 
                     //отрисовка зднего фона (двумя частями, так как он двигается) чтобы не оставалось пустого пространства
                     canvas.drawBitmap(background_bitmap, -background_x, viewHeight - viewHeight / 4-viewHeight / 98, paint);
-                    canvas.drawBitmap(background_bitmap, -background_x+background_bitmap.getWidth(), viewHeight - viewHeight / 4-viewHeight / 98, paint);
+                    canvas.drawBitmap(background_bitmap, -background_x+background_width, viewHeight - viewHeight / 4-viewHeight / 98, paint);
 
-                    canvas.drawBitmap(coin_bitmap, 0,60, paint);
-                    canvas.drawText(""+coins,viewWidth/30+10,110,paint);
-                    canvas.drawText("max: "+bestScore,viewWidth-260,80,paint);
-                    canvas.drawText((int) points + "", viewWidth - 260, 40, paint);
+                    canvas.drawBitmap(coin_bitmap, 10,60, paint);
+                    canvas.drawText(""+coins,viewWidth/30+20,110,paint);
+                    canvas.drawText("max: "+bestScore,viewWidth-300,80,paint);
+                    canvas.drawText((int) points + "", viewWidth - 300, 40, paint);
                     Random random = new Random();
+
+                    int last_coords=viewWidth;//обновление координат облаков
+                    int k = viewWidth/4;
+                    for (int i = 0; i < 4; i++) {
+                        if (!clouds_arr[i].isActive()){
+                            clouds_arr[i].setX(last_coords+k);
+                            clouds_arr[i].setY(random.nextInt(1*viewHeight/7)+cloud_bitmap.getHeight()*2);
+                            last_coords+=k;
+                            clouds_arr[i].setActive(true);
+                        }
+                    }
+                    for (CloudSprite cloud:clouds_arr){if (cloud.isActive())cloud.draw(canvas);}
                     //если елка за пределами экрана,то генерируем новую
-                    int last_coords=0;
+
                     if (!pterod_is_ready&&!Pterod.isActive()){//если птеро не собирается вылетать и не летит уже, то обновляем положение елок или кактусов
                     for (int i = 0; i < 2; i++) {
                         if (!(trees[i].isActive())) {//создаем новую елку если она за пределами экрана, т е не активна
-                            if (i == 0) last_coords = trees[1].getX();
-                            else last_coords = trees[0].getX();
-                            int coords = random.nextInt(viewWidth / 2) + last_coords + jump_length;
+                            if (i == 0) last_coords = trees[1].getX()+trees[1].getFrameWidth();
+                            else last_coords = trees[0].getX()+trees[0].getFrameWidth();
+                            int coin_x = (Coin.isActive())?Coin.getX()+coin_width:0;
+                            int coords = random.nextInt(viewWidth / 2) + last_coords + jump_length+coin_x;
+                            if (coords>viewWidth){
                             int ind = random.nextInt(tree_bitmap_arr.size());
                             if (mode == "tree") {
                                 trees[i] = new ChristmasTreeSprite(tree_bitmap, coords, viewHeight - viewHeight / 2 + viewHeight / 17, (int) this.speed, viewWidth);
                             } else {
                                 trees[i] = new CactusSprite(tree_bitmap_arr.get(ind), coords, 3*viewHeight/4+viewHeight/14, (int) this.speed, viewWidth);
-                            }
+                            }}
                         } else {
                             trees[i].draw(canvas);
                         }
                     }}
-                    else{for (int i = 0; i < 2; i++)if (Dino.isAlive())trees[i].draw(canvas);//если птеро готов к вылету, ждем пока последняя видимая елка скроется с экрана
+                    else{for (int i = 0; i < 2; i++)if (trees[i].isActive())trees[i].draw(canvas);//если птеро готов к вылету, ждем пока последняя видимая елка скроется с экрана
                         if (Math.max(trees[0].getX()+trees[0].getFrameWidth(),trees[1].getX()+trees[1].getFrameWidth())<0){Pterod.setActive(true);
-                            Pterod.setVx((int) this.speed);}}
+                            Pterod.setVx((int) this.speed); }}
 
-                        if (now % 100 == 0 && Dino.isAlive() && !(Coin.isActive())&&Math.max(trees[0].getX(), trees[1].getX())>viewWidth) {//спавн монетки каждые 100 мс
-                            last_coords = random.nextInt((Math.max(trees[0].getX(), trees[1].getX())- Math.min(trees[0].getX(), trees[1].getX()))/2)+ Math.min(trees[0].getX(), trees[1].getX()) ;
+                        if (now % 50 == 0 && Dino.isAlive() && !(Coin.isActive())&&Math.max(trees[0].getX(), trees[1].getX())>viewWidth) {//спавн монетки каждые 100 мc
+                            last_coords = (trees[0].getX()> trees[1].getX())?trees[0].getX()+trees[0].getFrameWidth()+coin_width+viewWidth/10:trees[1].getX()+trees[1].getFrameWidth()+coin_width+viewWidth/10;
                             if (last_coords>viewWidth){
                             Coin.setX(last_coords);
                             Coin.setActive(true);
@@ -292,13 +325,13 @@ public class DrawThread extends Thread  {
                         if (now%257==0 &&Dino.isAlive()&&!(Pterod.isActive())){
                             pterod_is_ready=true;
                             Pterod.setX(viewWidth+Pterod.getFrameWidth());//спавн птеродактеля
-
-                        Pterod.setY(random.nextInt(3*viewHeight/7-(int)( bent_dino_bitmap.getHeight()))+bent_dino_bitmap.getHeight()/2);
+                        int y = viewHeight-background_bitmap.getHeight()-bent_dino_bitmap.getHeight()-pterod_bitmap.getHeight();
+                        Pterod.setY(y+random.nextInt(((Dino.getY()+dino_height)-y)/5));//random.nextInt(y-(Dino.getY()+dino_bitmap.getHeight()))
                         }
                         if (Pterod.isActive())Pterod.draw(canvas);
-                        Dino.draw(canvas);
+                    Dino.draw(canvas);
 
-
+                    Log.d("SPEED","COIN "+Coin.getVx() +" this.speed "+ this.speed+ "cactus speed "+trees[0].getVx());
                         //проверка на конец игры
                         if (!Dino.isAlive()) {
                             paint.setTextSize(120);
@@ -309,12 +342,10 @@ public class DrawThread extends Thread  {
 
                             Pterod.draw(canvas);
 
-
-
-
                         }
-                        if (elapsedTime > 20) {
 
+                        if (elapsedTime > 18) {
+                            if (Dino.isAlive())
                             update();
                             prevTime = now;
                         }

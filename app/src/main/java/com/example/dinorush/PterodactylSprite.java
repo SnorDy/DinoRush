@@ -37,10 +37,15 @@ public class PterodactylSprite {
     public boolean isActive() {
         return isActive;
     }
-    public Rect getBoundingBoxRect(){
+    public Rect getBoundingBoxRect(boolean jump){
         if (currentFrame%2==0)
         return new Rect(this.x,this.y+frameHeight/2,this.x+getFrameWidth(),this.y+frameHeight);
         return new Rect(this.x,this.y,this.x+getFrameWidth(),this.y+frameHeight/2);
+    }
+    public Rect getBoundingBoxRect(){
+        if (currentFrame%2==0)
+            return new Rect(this.x,this.y+frameHeight/2,this.x+getFrameWidth()-getFrameWidth()/4,this.y+frameHeight);
+        return new Rect(this.x,this.y,this.x+getFrameWidth()-getFrameWidth()/4,this.y+frameHeight/2);
     }
 
     public void setActive(boolean active) {
