@@ -26,19 +26,9 @@ import java.util.Random;
 
 public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
     private static int viewWidth, viewHeight;
-
     private MediaPlayer jumpPlayer;
     DrawThread drawThread;
-    private int speed = 70,restart_width,restart_height,restart_x,restart_y,btn_home_x;
-
-
-    final private String best_points="0";
-    private Bitmap background_bitmap, tree_bitmap, dino_bitmap,restart_bitmap;
-    private int background_x = 0;
-    private static int  jump_length=1200;//длина прыжка для контроля спавна елок
-    private final int timerInterval = 30;
-    private static ChristmasTreeSprite[] trees = new ChristmasTreeSprite[2];
-    Paint paint = new Paint();
+    private int restart_width,restart_height,restart_x,restart_y,btn_home_x;
 
     public DrawView(Context context) {
         super(context);
