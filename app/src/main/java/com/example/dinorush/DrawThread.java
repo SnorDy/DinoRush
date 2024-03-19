@@ -40,7 +40,7 @@ public class DrawThread extends Thread  {
     private Bitmap[] cactuses;
     private ArrayList<Bitmap> tree_bitmap_arr = new ArrayList<>();
     private CloudSprite[] clouds_arr=new CloudSprite[4];
-    private String mode = "cactus";
+    private String mode = "tree";
     private Bitmap background_bitmap, dino_bitmap,bent_dino_bitmap,restart_bitmap,
             coin_bitmap,menu_bitmap,pterod_bitmap,cloud_bitmap;
     private int background_x = 0;
@@ -94,8 +94,7 @@ public class DrawThread extends Thread  {
                 R.drawable.cactus_1),BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.cactus_2), BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.cactus_4),BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.cactus_5),BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.cactus_3)};
+                R.drawable.cactus_5)};
 
         for (int i=0;i< cactuses.length;i++){this.tree_bitmap_arr.add(Bitmap.createScaledBitmap(cactuses[i],
                 viewWidth / 14*cactuses[i].getWidth()/100,
@@ -166,7 +165,6 @@ public class DrawThread extends Thread  {
     public int getBtnY(){return restart_y;}
     public int getBtnWidth(){return restart_width;}
     public int getBtnHeight(){return restart_height;}
-
     public void requestStop() {
         running = false;
     }
@@ -209,7 +207,7 @@ public class DrawThread extends Thread  {
                 if (!Pterod.isActive())
                     pterod_is_ready=false;
                     GenerateTrees();
-            }
+            }}
 
             if (Dino.intersect(Coin)&&Coin.isActive()){Coin.setActive(false);coins+=1;coinPlayer.start();}
             if (Dino.intersect(Pterod)&&Pterod.isActive()){Dino.setAlive(false);Pterod.setActive(false);}
@@ -227,7 +225,7 @@ public class DrawThread extends Thread  {
             Dino.update(timerInterval);
         }
 
-    }
+
     public void setPterod_is_ready(boolean f){pterod_is_ready=f;}
     public void GenerateTrees(){
 
