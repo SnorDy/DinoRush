@@ -12,22 +12,27 @@ public class Sprite {
     public int x, y, Vx,viewWidth;
     private int frameWidth;
     private Paint paint = new Paint();
-    public Sprite(Bitmap b){this.bitmap=b;}
+    public Sprite(Bitmap b,int x, int y, int Vx,int viewW){this.bitmap=b;
+        frameWidth = b.getWidth();
+        this.x=x;
+        this.y=y;
+        this.Vx=Vx;
+        this.viewWidth= viewW;
+    }
     public boolean isActive() {
         return isActive;
     }
     public void setActive(boolean f){this.isActive=f;}
-    public int getFrameWidth(){return bitmap.getWidth();}
+    public int getFrameWidth(){return frameWidth;}
+
     public void update() {
-
         x -= Vx;
-        if (x< -200){this.isActive=false;
-            Log.d("UPDATE","Its update");}
-
+        if (x< -getFrameWidth())this.isActive=false;
     }
     public int getVx() {
         return Vx;
     }
+
     public Rect getBoundingBoxRect(){
         return new Rect(this.x,this.y,this.x+bitmap.getWidth(),this.y+bitmap.getHeight());
     }
@@ -46,4 +51,3 @@ public class Sprite {
         return x;
     }
 }
-

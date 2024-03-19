@@ -238,7 +238,7 @@ public class DrawThread extends Thread  {
             int coords = random.nextInt(viewWidth/2) + last_coords+jump_length+viewWidth;
             int ind = random.nextInt(tree_bitmap_arr.size());
             if (this.mode == "tree"){
-                trees[i] = new ChristmasTreeSprite(tree_bitmap, coords, viewHeight - viewHeight / 2 + viewHeight / 17, (int) this.speed, viewWidth);}
+                trees[i] = new Sprite(tree_bitmap, coords, viewHeight - viewHeight / 2 + viewHeight / 17, (int) this.speed, viewWidth);}
             else{
                 trees[i] = new CactusSprite(tree_bitmap_arr.get(ind),coords , 3*viewHeight/4+viewHeight/14, (int) this.speed, viewWidth);}
             last_coords=coords;
@@ -300,7 +300,7 @@ public class DrawThread extends Thread  {
                             if (coords>viewWidth){
                             int ind = random.nextInt(tree_bitmap_arr.size());
                             if (mode == "tree") {
-                                trees[i] = new ChristmasTreeSprite(tree_bitmap, coords, viewHeight - viewHeight / 2 + viewHeight / 17, (int) this.speed, viewWidth);
+                                trees[i] = new Sprite(tree_bitmap, coords, viewHeight - viewHeight / 2 + viewHeight / 17, (int) this.speed, viewWidth);
                             } else {
                                 trees[i] = new CactusSprite(tree_bitmap_arr.get(ind), coords, 3*viewHeight/4+viewHeight/14, (int) this.speed, viewWidth);
                             }}
@@ -329,6 +329,9 @@ public class DrawThread extends Thread  {
                         Pterod.setY(y+random.nextInt(((Dino.getY()+dino_height)-y)/5));//random.nextInt(y-(Dino.getY()+dino_bitmap.getHeight()))
                         }
                         if (Pterod.isActive())Pterod.draw(canvas);
+
+
+
                     Dino.draw(canvas);
 
                     Log.d("SPEED","COIN "+Coin.getVx() +" this.speed "+ this.speed+ "cactus speed "+trees[0].getVx());
@@ -339,7 +342,9 @@ public class DrawThread extends Thread  {
                             canvas.drawBitmap(restart_bitmap, restart_x, restart_y, paint);
                             canvas.drawBitmap(menu_bitmap, btn_home_x, restart_y, paint);
                             paint.setTextSize(80);
+
                             Pterod.draw(canvas);
+
                         }
 
                         if (elapsedTime > 18) {
