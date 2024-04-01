@@ -14,7 +14,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class StartActivity extends AppCompatActivity {
-    Button play_btn,quit_btn;
+    Button play_btn,quit_btn,shop_btn;
     TextView coins_textView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,11 +24,14 @@ public class StartActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         setContentView(R.layout.start_activity);
 
+
         play_btn=findViewById(R.id.play_btn);
+        quit_btn=findViewById(R.id.quit_btn);
+        shop_btn = findViewById(R.id.shop_btn);
         coins_textView = findViewById(R.id.coin_textView);
         DataHelper DBconnector = new DataHelper(getApplicationContext());
         coins_textView.setText(DBconnector.selectCoins()+"");
-        quit_btn=findViewById(R.id.quit_btn);
+
         play_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -41,6 +44,13 @@ public class StartActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finishAffinity();
+            }
+        });
+        shop_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(StartActivity.this,ShopActivity.class);
+                startActivity(intent);
             }
         });
     }
